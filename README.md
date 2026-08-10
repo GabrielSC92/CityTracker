@@ -3,6 +3,21 @@
 A personal, offline-first map of everywhere you have been. Search for a place,
 add it to your map, and everything is saved to a local SQLite file.
 
+## Install
+
+**Windows, with no Python and no terminal** — [download the latest
+installer](https://github.com/GabrielSC92/CityTracker/releases/latest) and
+double-click it. It carries its own Python, installs per-user without an
+administrator password, and leaves a desktop shortcut that starts the app and
+opens your browser.
+
+Windows will warn that the publisher is unknown, because the installer is not
+code-signed. Click **More info → Run anyway**; that is the whole obstacle. See
+[why Windows warns](packaging/README.md#why-windows-warns-and-what-to-do-about-it)
+for why a certificate is not worth buying to reassure six friends.
+
+**From source**, on any platform:
+
 ```
 pip install -r requirements.txt
 streamlit run app.py
@@ -10,17 +25,17 @@ streamlit run app.py
 
 ## Giving it to someone who doesn't code
 
-`packaging\build.ps1` produces a 66 MB Windows installer that carries its own
-Python — no IDE, no `pip`, no terminal, and no administrator password needed at
-the other end. A desktop shortcut starts the app and opens the browser.
+`packaging\build.ps1` produces the 66 MB installer described above, so you can
+build and hand over a version of your own rather than sending them a link.
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File packaging\build.ps1 -AppVersion 1.0.0
 powershell -ExecutionPolicy Bypass -File packaging\verify.ps1 -AppVersion 1.0.0
 ```
 
-See [packaging/README.md](packaging/README.md) — including what to tell people
-about the "unknown publisher" warning.
+See [packaging/README.md](packaging/README.md) for how the payload is assembled,
+the three layout details that are load-bearing, and what `verify.ps1` checks
+before you send anything to anyone.
 
 ## Feature search
 
