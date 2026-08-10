@@ -186,6 +186,34 @@ just copying that one file. The schema is created on first run.
 Only `name`, `status`, `visited_on`, `rating` and `notes` are editable from the
 table; geographic fields stay as the geocoder resolved them.
 
+## Licensing and attribution
+
+The code is MIT (see [LICENSE](LICENSE)). The place data is not ours: it comes
+from OpenStreetMap via Photon and Nominatim, and OSM licenses its database under
+the [ODbL 1.0](https://opendatacommons.org/licenses/odbl/1-0/).
+
+Two obligations follow, and both are met:
+
+- **Credit where the data is shown.** The basemaps carry Leaflet's built-in
+  attribution inside the map, but the Places and Stats tabs show geocoded fields
+  with no map on screen, so `ATTRIBUTION` in `app.py` is also rendered as a
+  page footer on every tab.
+- **Identify yourself to Nominatim.** `geocode.py` sends a descriptive
+  `User-Agent` and throttles to 1 request/second, per their
+  [usage policy](https://operations.osmfoundation.org/policies/nominatim/).
+
+**ODbL share-alike does not reach this project, and does not affect the MIT
+licence on the code.** Share-alike applies when you publicly distribute a
+database derived from OSM. Nothing here does: the installer payload is the four
+`.py` files plus the Python runtime and wheels, and `data/city_tracker.db` is
+created empty on first run. The only OSM-derived database is the one on your own
+machine, holding your own places, which you never publish.
+
+If you *do* publish an export, the CSV is your Produced Work and the credit
+becomes yours to give — `© OpenStreetMap contributors (ODbL)` alongside it is
+enough. The export itself is left as clean CSV with no comment header, so it
+stays round-trippable by the planned importer and opens cleanly in Excel.
+
 ## Files
 
 | File | Purpose |

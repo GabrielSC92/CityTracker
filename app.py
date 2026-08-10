@@ -27,6 +27,16 @@ TILE_OPTIONS = {
     "Dark": "CartoDB dark_matter",
     "Street": "OpenStreetMap",
 }
+# Leaflet renders the basemap's own attribution inside the map, which covers the
+# Map tab only. Every tab shows geocoded place data, so the credit is repeated as
+# a page footer.
+ATTRIBUTION = (
+    "Place data © [OpenStreetMap](https://www.openstreetmap.org/copyright) "
+    "contributors, licensed under "
+    "[ODbL](https://opendatacommons.org/licenses/odbl/1-0/) · "
+    "geocoding by [Photon](https://photon.komoot.io) and "
+    "[Nominatim](https://nominatim.openstreetmap.org)"
+)
 
 st.set_page_config(page_title="City Tracker", page_icon="🌍", layout="wide")
 db.init_db()
@@ -347,6 +357,10 @@ with list_tab:
             file_name="city-tracker.csv",
             mime="text/csv",
         )
+        st.caption(
+            "The export carries OpenStreetMap-derived fields. If you publish it, "
+            "credit © OpenStreetMap contributors (ODbL)."
+        )
 
 
 # --------------------------------------------------------------------------
@@ -400,3 +414,11 @@ with stats_tab:
                 "first_visit": st.column_config.DateColumn("First visit", format="YYYY-MM-DD")
             },
         )
+
+
+# --------------------------------------------------------------------------
+# Attribution — outside the tabs, so it shows on all three
+# --------------------------------------------------------------------------
+
+st.divider()
+st.caption(ATTRIBUTION)
