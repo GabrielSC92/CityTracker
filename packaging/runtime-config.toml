@@ -1,0 +1,16 @@
+# Streamlit settings for the installed build. The developer config in
+# ../.streamlit/config.toml stays as it is; this one ships to friends, where
+# nobody is editing source files and nobody should be asked for an email.
+[browser]
+gatherUsageStats = false
+
+[theme]
+primaryColor = "#2e7d32"
+
+[server]
+runOnSave = false
+fileWatcherType = "none"
+headless = true
+
+[client]
+toolbarMode = "minimal"
