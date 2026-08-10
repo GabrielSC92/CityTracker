@@ -66,12 +66,17 @@ Source: "{#PayloadDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs
 Source: "icon.ico"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
-Name: "{group}\{#AppName}"; Filename: "{app}\{#AppExeName}"; Parameters: """{app}\app\launcher.py"""; WorkingDir: "{app}\app"; IconFilename: "{app}\icon.ico"; Comment: "Your personal map of everywhere you have been"
+; runminimized sends the launcher window straight to the taskbar. It still
+; exists, because it is the only way to quit and the only place a failed start
+; is reported - pythonw.exe would remove it entirely, but input() raises
+; RuntimeError with no console and hold_open() catches only EOFError, so every
+; error path would die silently.
+Name: "{group}\{#AppName}"; Filename: "{app}\{#AppExeName}"; Parameters: """{app}\app\launcher.py"""; WorkingDir: "{app}\app"; IconFilename: "{app}\icon.ico"; Comment: "Your personal map of everywhere you have been"; Flags: runminimized
 Name: "{group}\Uninstall {#AppName}"; Filename: "{uninstallexe}"
-Name: "{autodesktop}\{#AppName}"; Filename: "{app}\{#AppExeName}"; Parameters: """{app}\app\launcher.py"""; WorkingDir: "{app}\app"; IconFilename: "{app}\icon.ico"; Comment: "Your personal map of everywhere you have been"; Tasks: desktopicon
+Name: "{autodesktop}\{#AppName}"; Filename: "{app}\{#AppExeName}"; Parameters: """{app}\app\launcher.py"""; WorkingDir: "{app}\app"; IconFilename: "{app}\icon.ico"; Comment: "Your personal map of everywhere you have been"; Tasks: desktopicon; Flags: runminimized
 
 [Run]
-Filename: "{app}\{#AppExeName}"; Parameters: """{app}\app\launcher.py"""; WorkingDir: "{app}\app"; Description: "Open City Tracker now"; Flags: nowait postinstall skipifsilent
+Filename: "{app}\{#AppExeName}"; Parameters: """{app}\app\launcher.py"""; WorkingDir: "{app}\app"; Description: "Open City Tracker now"; Flags: nowait postinstall skipifsilent runminimized
 
 [UninstallDelete]
 ; Byte-code the bundled interpreter writes after installation, which is not
