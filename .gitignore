@@ -188,6 +188,17 @@ cython_debug/
 #   option (not recommended) you can uncomment the following to ignore the entire idea folder.
 # .idea/
 
+# --- City Tracker ---------------------------------------------------------
+# Someone's own travel history. The app creates this on first run; the
+# packaged build keeps it in %LOCALAPPDATA%\CityTracker\data instead.
+data/
+
+# Streamlit secrets, if this ever grows an API key.
+.streamlit/secrets.toml
+
+# The installer's staging area and output are already covered above by
+# build/ and dist/. packaging/requirements-lock.txt is deliberately tracked.
+
 # Abstra
 #   Abstra is an AI-powered process automation framework.
 #   Ignore directories containing user credentials, local state, and settings.
