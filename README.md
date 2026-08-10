@@ -73,6 +73,102 @@ honoured by a throttle in `geocode.py`. Results are cached for an hour.
 - **Manual add** — for anywhere OSM doesn't know about, enter a name and
   coordinates directly.
 
+## Roadmap
+
+Four things are planned. The order below is the order they should be built —
+profiles reshape the schema, so doing them before bulk import saves migrating
+the same rows twice.
+
+| # | Feature | Touches |
+| --- | --- | --- |
+| 1 | [Visual overhaul](#1-visual-overhaul) | `app.py`, `.streamlit/config.toml` |
+| 2 | [Login with profiles](#2-login-with-profiles) | `db.py`, `app.py`, new `auth.py` |
+| 3 | [Easy import of data](#3-easy-import-of-data) | new `importers.py`, `geocode.py` |
+| 4 | [H3 statistics](#4-h3-statistics) | new `hexes.py`, `app.py` stats tab |
+
+### 1. Visual overhaul
+
+Today the app is stock Streamlit with a green `primaryColor`. The goal is
+something that looks deliberate rather than default.
+
+- **A real theme** — full palette in `.streamlit/config.toml` (background,
+  secondary background, text, font) instead of the single accent colour, plus a
+  light/dark switch that also drives the basemap so the map stops fighting the
+  page.
+- **Header metrics as cards.** The four `st.metric` counters become a designed
+  row — flag strip for countries, a share-of-world figure, sparkline of places
+  per year.
+- **Better markers.** `folium.Icon` gives every marker the same Font Awesome
+  pin; switch to per-category glyphs (mountain, park, theme park, city) sized by
+  rating, with the popup HTML in `app.py` moved into a small template.
+- **Layout.** Sidebar is doing search, manual add *and* filters at once; move
+  filters onto a compact bar above the tabs so the map gets the full width.
+- **Empty and first-run states** worth looking at, since a fresh install has an
+  empty map.
+
+### 2. Login with profiles
+
+One database currently means one traveller. Profiles let a household or a couple
+keep separate maps in the same install, and compare them.
+
+- **Schema.** New `profiles` table (`id`, `name`, `avatar`, `created_at`) and a
+  `profile_id` foreign key on `places`.
+- **The dedupe index has to change.** `idx_places_osm` is unique on
+  `(osm_type, osm_id)` across the whole file, so as soon as there are two
+  profiles the second person cannot add a place the first one already has. It
+  becomes unique on `(profile_id, osm_type, osm_id)`, which needs a migration —
+  the schema is currently create-only, so a `schema_version` table and a
+  migration step come with this.
+- **Auth.** Two different environments to serve: the packaged Windows build is a
+  single-machine app where a PIN or a plain profile picker is enough, while a
+  hosted deployment wants real accounts (`st.login` / OIDC, or
+  `streamlit-authenticator` with hashed passwords). Keep the check behind
+  `auth.py` so the storage layer only ever sees a `profile_id`.
+- **Sharing.** Read-only view of another profile's map, and a compare mode —
+  who has been where, what is on both wishlists.
+- **Filters and export** become profile-scoped; the CSV export gains a
+  `profile` column.
+
+### 3. Easy import of data
+
+Export exists, import does not, so the only way in is one place at a time
+through the search box. That is the biggest barrier to actually using the app
+with a travel history that already exists somewhere else.
+
+- **Formats.** CSV and Excel first, then JSON/GeoJSON, GPX and KML (what phones
+  and GPS apps hand you), and Google Maps Takeout saved-place lists.
+- **Column mapping UI.** Upload, preview the first rows, map columns onto
+  `name` / `city` / `country` / `lat` / `lon` / `status` / `visited_on` /
+  `rating` / `notes`, with a guess pre-filled from the header names. Remember
+  the mapping so re-importing an updated file is one click.
+- **Rows without coordinates** get geocoded through the existing Photon +
+  Nominatim path. Nominatim's 1 request/second throttle in `geocode.py` makes a
+  400-row file a 7-minute job, so this needs batching, a progress bar and a
+  resumable queue rather than a blocking call.
+- **Ambiguity queue.** Where the geocoder returns several plausible matches,
+  park the row and let the user pick afterwards instead of guessing.
+- **Dry run.** Report how many rows are new, how many duplicate an existing OSM
+  feature, and how many failed to resolve — before writing anything.
+
+### 4. H3 statistics
+
+Counting by country is coarse: a fortnight across Île-de-France and a fortnight
+across Brazil both read as "1 country". Binning places into
+[H3](https://h3geo.org) hexagons gives an even-area view of where you actually
+spend time.
+
+- **Store the cell.** An `h3_cell` column filled at insert time from
+  `lat`/`lon`, or computed on load — cheap enough either way at this data size.
+- **Hex map.** A `pydeck` `H3HexagonLayer` coloured by count, with a resolution
+  slider so the same data reads as continents at low resolution and
+  neighbourhoods at high.
+- **Stats the country grouping cannot express** — how much of the world is
+  covered at a given resolution, densest cells, nearest unvisited cell, cells
+  added per year as a time series.
+- **New dependencies.** `h3` and `pydeck`, which means regenerating
+  `packaging/requirements-lock.txt` and re-checking the installer size claim in
+  this README.
+
 ## Storage
 
 Everything lives in `data/city_tracker.db`. Backing up your travel history is
